@@ -346,6 +346,7 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
   const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState<string>('');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const chatSessionRef = useRef<Chat | null>(null);
   const chatTokenSessionIdRef = useRef<string | null>(null);
@@ -408,15 +409,18 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
     }
   }, [sessionKey, messages]);
 
+  // --- RACE CONDITION FIX ---
+  // Do NOT recreate the chat session if we are currently processing a request.
+  // This prevents the session object from being swapped out mid-turn when the 'applicationDraft' dependency updates.
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile && !isLoading) {
       if (!chatTokenSessionIdRef.current) {
         chatTokenSessionIdRef.current = `ai-apply-${Math.random().toString(36).substr(2, 9)}`;
       }
       const historyToSeed = messages.length > 1 ? messages.slice(-6) : [];
       chatSessionRef.current = createChatSession(userProfile, activeFund, applications, historyToSeed, 'aiApply', applicationDraft);
     }
-  }, [applications, activeFund, userProfile, applicationDraft, messages]);
+  }, [applications, activeFund, userProfile, applicationDraft, messages, isLoading]);
   
     useEffect(() => {
       // After a message is sent and a response is received (isLoading becomes false)
@@ -452,6 +456,7 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
     if (!userInput.trim() || isLoading) return;
 
     setIsLoading(true);
+    setLoadingStatus("Analyzing your request...");
     const userMessage: ChatMessage = { role: MessageRole.USER, content: userInput };
     setMessages(prev => [...prev, userMessage]);
     
@@ -488,6 +493,8 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
         return;
       }
       
+      setLoadingStatus("Updating application draft...");
+
       // If there are function calls, execute them and then send the results back to the model.
       // We also count tokens for the function call response from the model (treated as output).
       let intermediateOutputTokens = estimateTokens(JSON.stringify(functionCalls));
@@ -502,6 +509,8 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
       
       // Count tokens for the function response we send back (treated as input for the 2nd call)
       let intermediateInputTokens = estimateTokens(JSON.stringify(functionResponses));
+
+      setLoadingStatus("Finalizing response...");
 
       // SECOND API CALL: Send tool responses back using the *same session* from this turn.
       const response2 = await currentTurnSession.sendMessage({ message: functionResponses });
@@ -539,6 +548,7 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
     } finally {
       // This always runs, ensuring the loading state is reset.
       setIsLoading(false);
+      setLoadingStatus('');
     }
   }, [isLoading, onChatbotAction, t]);
 
@@ -586,7 +596,7 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
                                 </button>
                             </header>
                             <div className="flex-1 overflow-hidden flex flex-col">
-                                <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} />
+                                <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} loadingMessage={loadingStatus} />
                             </div>
                             <footer className="p-4 flex-shrink-0 bg-black/20 rounded-b-lg">
                                 <div className="relative">
@@ -611,7 +621,7 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
                                 </button>
                             </header>
                             <div className="flex-1 overflow-hidden flex flex-col">
-                                <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} />
+                                <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} loadingMessage={loadingStatus} />
                             </div>
                             <footer className="p-4 flex-shrink-0 bg-black/20 rounded-b-lg">
                                 <ChatInput ref={inputRef} onSendMessage={handleSendMessage} isLoading={isLoading} disabled={!canApply} />
