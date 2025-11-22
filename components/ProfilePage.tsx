@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
-import type { Application, UserProfile, Address, EligibilityStatus, FundIdentity, ActiveIdentity, ClassVerificationStatus } from '../types';
+import type { Application, UserProfile, Address, EligibilityStatus, FundIdentity, ActiveIdentity, ClassVerificationStatus, Page } from '../types';
 import ApplicationDetailModal from './ApplicationDetailModal';
 import CountrySelector from './CountrySelector';
 import SearchableSelector from './SearchableSelector';
@@ -11,7 +11,7 @@ import { FormInput, FormRadioGroup, AddressFields } from './FormControls';
 import PolicyModal from './PolicyModal';
 
 interface ProfilePageProps {
-  navigate: (page: 'home' | 'apply' | 'classVerification') => void;
+  navigate: (page: Page) => void;
   applications: Application[];
   userProfile: UserProfile;
   onProfileUpdate: (updatedProfile: UserProfile) => Promise<void>;
@@ -137,6 +137,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
   const sortedApplicationsForDisplay = useMemo(() => {
     return [...applications].reverse();
   }, [applications]);
+
+  const recentApplications = useMemo(() => {
+    return sortedApplicationsForDisplay.slice(0, 2);
+  }, [sortedApplicationsForDisplay]);
 
   const currentActiveFullIdentity = useMemo(() => {
     if (!activeIdentity) return null;
@@ -366,7 +370,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                 <div className="space-y-4">
                 {applications.length > 0 ? (
                     <>
-                        {sortedApplicationsForDisplay.map(app => (
+                        {recentApplications.map(app => (
                         <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[var(--theme-bg-secondary)] p-4 rounded-md flex justify-between items-center hover:bg-[var(--theme-bg-primary)]/50 transition-colors duration-200">
                             <div>
                             <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">{app.event}</p>
@@ -378,7 +382,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                             </div>
                         </button>
                         ))}
-                        <div className="flex justify-center pt-4">
+                        
+                        <div className="flex flex-col items-center gap-3 pt-4">
+                            {applications.length > 2 && (
+                                <button 
+                                    onClick={() => navigate('myApplications')} 
+                                    className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)] hover:opacity-80 transition-opacity"
+                                >
+                                    See All Applications
+                                </button>
+                            )}
                             <button 
                                 onClick={() => navigate('apply')} 
                                 className="bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-bold py-2 px-6 rounded-md transition-colors duration-200 disabled:bg-gray-600 disabled:cursor-not-allowed"
