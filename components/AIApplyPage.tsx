@@ -391,19 +391,22 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
     if (window.innerWidth >= 768) return true;
     return false; // Always show on new mount (new session)
   });
-  const initDoneForUser = useRef<string | null>(null);
-
-  const sessionKey = userProfile ? `aiApplyChatHistory-${userProfile.uid}` : null;
+  
+  // Change key to include fund code to separate session history per fund
+  const sessionKey = userProfile ? `aiApplyChatHistory-${userProfile.uid}-${userProfile.fundCode}` : null;
   const greetingMessage = t('aiApplyPage.greeting');
+  
+  // Track the last session key to re-trigger loading when fund changes
+  const lastSessionKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (sessionKey && userProfile && initDoneForUser.current !== userProfile.uid) {
+    // If sessionKey changed (e.g. fund switched), load the new history
+    if (sessionKey && userProfile && lastSessionKey.current !== sessionKey) {
       try {
         const savedMessages = sessionStorage.getItem(sessionKey);
         if (savedMessages) {
           const parsed = JSON.parse(savedMessages);
           // *** CRITICAL FIX ***: Filter history immediately on load to remove any 'error' messages
-          // that might have caused the previous crash loop.
           const validMessages = parsed.filter((m: ChatMessage) => m.role === 'user' || m.role === 'model');
           
           if (validMessages.length > 0) {
@@ -412,13 +415,14 @@ const AIApplyPage: React.FC<AIApplyPageProps> = ({ userProfile, applications, on
              setMessages([{ role: MessageRole.MODEL, content: greetingMessage }]);
           }
         } else {
+          // Start fresh if no history for this fund
           setMessages([{ role: MessageRole.MODEL, content: greetingMessage }]);
         }
       } catch (error) {
         console.error('Could not load chat history from session storage', error);
         setMessages([{ role: MessageRole.MODEL, content: greetingMessage }]);
       }
-      initDoneForUser.current = userProfile.uid;
+      lastSessionKey.current = sessionKey;
     }
   }, [sessionKey, greetingMessage, userProfile]);
 

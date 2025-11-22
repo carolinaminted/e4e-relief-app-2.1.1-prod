@@ -141,6 +141,9 @@ function App() {
                 const savedDraft = localStorage.getItem(draftKey);
                 if (savedDraft) {
                     setApplicationDraft(JSON.parse(savedDraft));
+                } else {
+                    // Clear draft if none exists for this fund identity, ensuring fresh state
+                    setApplicationDraft(null);
                 }
             } catch (error) {
                 console.error("Could not load application draft from localStorage:", error);
@@ -325,6 +328,9 @@ function App() {
     if (identityToActivate && identityToActivate.eligibilityStatus === 'Eligible') {
         console.log(`[Telemetry] track('IdentitySwitch', { from: ${activeIdentity?.fundCode}, to: ${identityToActivate.fundCode} })`);
         
+        // Explicitly clear draft state immediately to prevent UI flicker with old fund data
+        setApplicationDraft(null);
+
         await identitiesRepo.update(identityId, { lastUsedAt: new Date().toISOString() });
         await usersRepo.update(currentUser.uid, { activeIdentityId: identityId });
 
@@ -607,7 +613,7 @@ function App() {
     try {
         const draftKey = `applicationDraft-${currentUser.uid}-${currentUser.fundCode}`;
         localStorage.removeItem(draftKey);
-        const chatHistoryKey = `aiApplyChatHistory-${currentUser.uid}`;
+        const chatHistoryKey = `aiApplyChatHistory-${currentUser.uid}-${currentUser.fundCode}`;
         sessionStorage.removeItem(chatHistoryKey);
         console.log("Successfully submitted. Cleared saved application draft and AI Apply chat history.");
     } catch (error) {
