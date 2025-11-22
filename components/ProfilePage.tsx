@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Application, UserProfile, Address, EligibilityStatus, FundIdentity, ActiveIdentity, ClassVerificationStatus, Page } from '../types';
 import ApplicationDetailModal from './ApplicationDetailModal';
 import CountrySelector from './CountrySelector';
@@ -81,6 +82,7 @@ const EligibilityIndicator: React.FC<{ cvStatus: ClassVerificationStatus, onClic
 type ProfileSection = 'identities' | 'applications' | 'contact' | 'addresses' | 'additionalDetails' | 'consent';
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userProfile, onProfileUpdate, identities, activeIdentity, onSetActiveIdentity, onAddIdentity, onRemoveIdentity }) => {
+  const { i18n } = useTranslation();
   const [formData, setFormData] = useState<UserProfile>(userProfile);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [errors, setErrors] = useState<Record<string, any>>({});
@@ -374,7 +376,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ navigate, applications, userP
                         <button key={app.id} onClick={() => setSelectedApplication(app)} className="w-full text-left bg-[var(--theme-bg-secondary)] p-4 rounded-md flex justify-between items-center hover:bg-[var(--theme-bg-primary)]/50 transition-colors duration-200">
                             <div>
                             <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">{app.event}</p>
-                            <p className="text-sm text-gray-300">Submitted: {app.submittedDate}</p>
+                            <p className="text-sm text-gray-300">Submitted: {new Date(app.submittedDate).toLocaleString(i18n.language, {
+                                year: 'numeric',
+                                month: 'numeric',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                            })}</p>
                             </div>
                             <div className="text-right">
                             <p className="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">${app.requestedAmount.toFixed(2)}</p>
