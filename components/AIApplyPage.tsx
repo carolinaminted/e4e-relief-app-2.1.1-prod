@@ -57,8 +57,9 @@ const FirstTimeUserGuide: React.FC = () => (
 );
 
 
-const SectionHeader: React.FC<{ title: string; isComplete: boolean; isOpen: boolean; onToggle: () => void, disabled?: boolean }> = ({ title, isComplete, isOpen, onToggle, disabled }) => (
+const SectionHeader: React.FC<{ title: string; isComplete: boolean; isOpen: boolean; onToggle: () => void, disabled?: boolean, id?: string }> = ({ title, isComplete, isOpen, onToggle, disabled, id }) => (
     <button
+        id={id}
         onClick={onToggle}
         className="w-full flex justify-between items-center text-left py-3 px-4 bg-[var(--theme-bg-secondary)]/50 rounded-t-md disabled:opacity-60 disabled:cursor-not-allowed"
         aria-expanded={isOpen}
@@ -84,6 +85,7 @@ const AIApplyPreviewPane: React.FC<{
     canApply: boolean;
 }> = ({ userProfile, applicationDraft, onDraftUpdate, onSubmit, canApply }) => {
     const { t } = useTranslation();
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const baseChecklistItems = useMemo(() => [
       { key: 'employmentStartDate', label: t('applyContactPage.employmentStartDate') },
@@ -169,7 +171,7 @@ const AIApplyPreviewPane: React.FC<{
         setOpenSection(prev => (prev === section ? null : section));
     };
 
-    // Effect to auto-open the next incomplete section, but NOT the agreements section automatically
+    // Effect to auto-open the next incomplete section
     useEffect(() => {
         if (!isAdditionalDetailsComplete) setOpenSection('additional');
         else if (!isAcknowledgementsComplete) setOpenSection('acknowledgements');
@@ -181,7 +183,6 @@ const AIApplyPreviewPane: React.FC<{
     const isProfileItemComplete = (key: string) => {
         const draftValue = applicationDraft?.profileData?.[key as keyof UserProfile];
         if (draftValue !== undefined && draftValue !== null && draftValue !== '') {
-             // For booleans, check explicitly if true for acknowledgements, though checklist logic handles existence.
              if (typeof draftValue === 'boolean') return draftValue === true;
              return true;
         }
@@ -218,9 +219,42 @@ const AIApplyPreviewPane: React.FC<{
 
     const visibleEventItems = eventChecklistItems.filter(item => !item.condition || item.condition(applicationDraft?.eventData || {}));
 
+    // --- Auto-Scroll Logic ---
+    useEffect(() => {
+        // Small timeout to allow for React render cycle and accordion animation start
+        const timer = setTimeout(() => {
+            let targetId: string | null = null;
+
+            if (openSection === 'additional') {
+                const firstIncomplete = baseChecklistItems.find(item => !isProfileItemComplete(item.key));
+                if (firstIncomplete) targetId = `item-additional-${firstIncomplete.key}`;
+            } else if (openSection === 'acknowledgements') {
+                const firstIncomplete = acknowledgementChecklistItems.find(item => !isProfileItemComplete(item.key));
+                if (firstIncomplete) targetId = `item-acknowledgements-${firstIncomplete.key}`;
+            } else if (openSection === 'event') {
+                const firstIncomplete = visibleEventItems.find(item => !isEventItemComplete(item.key as keyof EventData));
+                if (firstIncomplete) targetId = `item-event-${firstIncomplete.key}`;
+            } else if (openSection === 'expenses') {
+                // For expenses, just scroll to the section header since it's a custom component
+                targetId = 'header-expenses';
+            } else if (openSection === 'agreements') {
+                targetId = 'header-agreements';
+            }
+
+            if (targetId) {
+                const element = document.getElementById(targetId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, [applicationDraft, openSection, baseChecklistItems, acknowledgementChecklistItems, visibleEventItems]);
+
 
     return (
-        <div className="bg-[var(--theme-bg-primary)]/50 rounded-lg shadow-2xl flex flex-col p-4 flex-1 min-h-0">
+        <div ref={scrollContainerRef} className="bg-[var(--theme-bg-primary)]/50 rounded-lg shadow-2xl flex flex-col p-4 flex-1 min-h-0">
             <h2 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)] brightness-150 drop-shadow-sm mb-4 text-center flex-shrink-0">
                 {t('aiApplyPage.progressTitle')}
             </h2>
@@ -228,14 +262,14 @@ const AIApplyPreviewPane: React.FC<{
             <div className="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar min-h-0">
                 {/* Additional Details Section */}
                 <div className="bg-[var(--theme-bg-secondary)]/30 rounded-md border border-[var(--theme-accent)]/50">
-                    <SectionHeader title={t('aiApplyPage.additionalDetailsPreviewTitle')} isComplete={isAdditionalDetailsComplete} isOpen={openSection === 'additional'} onToggle={() => toggleSection('additional')} />
+                    <SectionHeader id="header-additional" title={t('aiApplyPage.additionalDetailsPreviewTitle')} isComplete={isAdditionalDetailsComplete} isOpen={openSection === 'additional'} onToggle={() => toggleSection('additional')} />
                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSection === 'additional' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="p-3 space-y-2">
                             {baseChecklistItems.map(item => {
                                 const isComplete = isProfileItemComplete(item.key);
                                 const value = getProfileValue(item.key);
                                 return (
-                                    <div key={item.key} className="p-2 bg-black/20 rounded-md flex flex-col">
+                                    <div id={`item-additional-${item.key}`} key={item.key} className="p-2 bg-black/20 rounded-md flex flex-col">
                                         <div className="flex items-center gap-3">
                                             <div className="flex-shrink-0 w-5 h-5">
                                                 {isComplete ? <CheckmarkIcon /> : <CircleIcon />}
@@ -258,11 +292,11 @@ const AIApplyPreviewPane: React.FC<{
 
                 {/* Profile Acknowledgements Section */}
                 <div className={`bg-[var(--theme-bg-secondary)]/30 rounded-md border border-[var(--theme-accent)]/50 ${!isAdditionalDetailsComplete ? 'opacity-50' : ''}`}>
-                    <SectionHeader title={t('aiApplyPage.profileAcknowledgementsPreviewTitle')} isComplete={isAcknowledgementsComplete} isOpen={openSection === 'acknowledgements'} onToggle={() => toggleSection('acknowledgements')} disabled={!isAdditionalDetailsComplete} />
+                    <SectionHeader id="header-acknowledgements" title={t('aiApplyPage.profileAcknowledgementsPreviewTitle')} isComplete={isAcknowledgementsComplete} isOpen={openSection === 'acknowledgements'} onToggle={() => toggleSection('acknowledgements')} disabled={!isAdditionalDetailsComplete} />
                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSection === 'acknowledgements' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="p-3 space-y-2">
                             {acknowledgementChecklistItems.map(item => (
-                                <div key={item.key} className="flex items-center gap-3 p-2 bg-black/20 rounded-md">
+                                <div id={`item-acknowledgements-${item.key}`} key={item.key} className="flex items-center gap-3 p-2 bg-black/20 rounded-md">
                                     <div className="flex-shrink-0 w-5 h-5">
                                         {isProfileItemComplete(item.key) ? <CheckmarkIcon /> : <CircleIcon />}
                                     </div>
@@ -277,14 +311,14 @@ const AIApplyPreviewPane: React.FC<{
 
                 {/* Event Details Section */}
                 <div className={`bg-[var(--theme-bg-secondary)]/30 rounded-md border border-[var(--theme-accent)]/50 ${!isAcknowledgementsComplete ? 'opacity-50' : ''}`}>
-                     <SectionHeader title={t('aiApplyPage.eventDetailsPreviewTitle')} isComplete={isEventDetailsComplete} isOpen={openSection === 'event'} onToggle={() => toggleSection('event')} disabled={!isAcknowledgementsComplete} />
+                     <SectionHeader id="header-event" title={t('aiApplyPage.eventDetailsPreviewTitle')} isComplete={isEventDetailsComplete} isOpen={openSection === 'event'} onToggle={() => toggleSection('event')} disabled={!isAcknowledgementsComplete} />
                      <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSection === 'event' ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="p-3 space-y-2">
                             {visibleEventItems.map(item => {
                                 const isComplete = isEventItemComplete(item.key as keyof EventData);
                                 const value = getEventValue(item.key as keyof EventData);
                                 return (
-                                    <div key={item.key} className="p-2 bg-black/20 rounded-md flex flex-col">
+                                    <div id={`item-event-${item.key}`} key={item.key} className="p-2 bg-black/20 rounded-md flex flex-col">
                                         <div className="flex items-center gap-3">
                                             <div className="flex-shrink-0 w-5 h-5">
                                                 {isComplete ? <CheckmarkIcon /> : <CircleIcon />}
@@ -307,7 +341,7 @@ const AIApplyPreviewPane: React.FC<{
 
                 {/* Expenses Section */}
                 <div className={`bg-[var(--theme-bg-secondary)]/30 rounded-md border border-[var(--theme-accent)]/50 ${!isEventDetailsComplete ? 'opacity-50' : ''}`}>
-                    <SectionHeader title={t('aiApplyPage.expensesPreviewTitle')} isComplete={isExpensesComplete} isOpen={openSection === 'expenses'} onToggle={() => toggleSection('expenses')} disabled={!isEventDetailsComplete} />
+                    <SectionHeader id="header-expenses" title={t('aiApplyPage.expensesPreviewTitle')} isComplete={isExpensesComplete} isOpen={openSection === 'expenses'} onToggle={() => toggleSection('expenses')} disabled={!isEventDetailsComplete} />
                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSection === 'expenses' ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'}`}>
                         {userProfile && (
                             <AIApplyExpenses
@@ -324,7 +358,7 @@ const AIApplyPreviewPane: React.FC<{
 
                 {/* Agreements Section */}
                 <div className={`bg-[var(--theme-bg-secondary)]/30 rounded-md border border-[var(--theme-accent)]/50 ${!isExpensesComplete ? 'opacity-50' : ''}`}>
-                    <SectionHeader title={t('aiApplyPage.agreementsPreviewTitle')} isComplete={false} isOpen={openSection === 'agreements'} onToggle={() => toggleSection('agreements')} disabled={!isExpensesComplete} />
+                    <SectionHeader id="header-agreements" title={t('aiApplyPage.agreementsPreviewTitle')} isComplete={false} isOpen={openSection === 'agreements'} onToggle={() => toggleSection('agreements')} disabled={!isExpensesComplete} />
                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSection === 'agreements' ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'}`}>
                         {userProfile && (
                             <AIApplyAgreements
