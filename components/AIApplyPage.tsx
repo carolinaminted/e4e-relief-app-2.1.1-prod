@@ -254,7 +254,7 @@ const AIApplyPreviewPane: React.FC<{
 
 
     return (
-        <div ref={scrollContainerRef} className="bg-[var(--theme-bg-primary)]/50 rounded-lg shadow-2xl flex flex-col p-4 flex-1 min-h-0">
+        <div ref={scrollContainerRef} className="bg-[var(--theme-bg-secondary)] rounded-lg shadow-2xl flex flex-col p-4 flex-1 min-h-0 border border-[var(--theme-bg-primary)]">
             <h2 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)] brightness-150 drop-shadow-sm mb-4 text-center flex-shrink-0">
                 {t('aiApplyPage.progressTitle')}
             </h2>
