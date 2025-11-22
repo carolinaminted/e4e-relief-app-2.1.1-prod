@@ -21,15 +21,15 @@ export const TopUserChart: React.FC<{ topUser: TopUserData | null }> = ({ topUse
                  <p className="text-sm text-gray-200 truncate pr-2">User: <span className="font-semibold text-white">{topUser.userName}</span></p>
                  <p className="text-lg font-bold text-white">{topUser.totalTokens.toLocaleString()} <span className="text-xs font-normal text-gray-400">tokens</span></p>
             </div>
-            <div className="w-full h-8 bg-[#003a70] rounded-md flex overflow-hidden border border-[#005ca0]">
-                <Bar value={topUser.inputTokens} total={topUser.totalTokens} color="#005ca0" label="Input" />
-                <Bar value={topUser.cachedInputTokens} total={topUser.totalTokens} color="#007bff" label="Cached Input" />
-                <Bar value={topUser.outputTokens} total={topUser.totalTokens} color="#ff8400" label="Output" />
+            <div className="w-full h-8 bg-[var(--theme-bg-primary)] rounded-md flex overflow-hidden border border-[var(--theme-border)]">
+                <Bar value={topUser.inputTokens} total={topUser.totalTokens} color="var(--theme-border)" label="Input" />
+                <Bar value={topUser.cachedInputTokens} total={topUser.totalTokens} color="#0091b3" label="Cached Input" />
+                <Bar value={topUser.outputTokens} total={topUser.totalTokens} color="var(--theme-accent)" label="Output" />
             </div>
             <div className="flex justify-end gap-4 mt-2 text-xs">
-                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[#005ca0] mr-1"></span> Input</div>
-                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[#007bff] mr-1"></span> Cached</div>
-                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[#ff8400] mr-1"></span> Output</div>
+                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[var(--theme-border)] mr-1"></span> Input</div>
+                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[#0091b3] mr-1"></span> Cached</div>
+                <div className="flex items-center"><span className="w-3 h-3 rounded-sm bg-[var(--theme-accent)] mr-1"></span> Output</div>
             </div>
         </>
     );
@@ -76,7 +76,7 @@ export const LastHourUsageChart: React.FC<{ usage: LastHourUsageDataPoint[] }> =
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
             {yAxisLabels.map(({ value, y }) => (
                 <g key={value}>
-                    <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#005ca0" strokeWidth="1" />
+                    <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="var(--theme-border)" strokeWidth="1" />
                     <text x={padding - 5} y={y + 3} fill="#9ca3af" textAnchor="end" fontSize="10">
                         {value >= 1000 ? `${(value/1000).toFixed(1).replace('.0', '')}k` : value}
                     </text>
@@ -87,7 +87,7 @@ export const LastHourUsageChart: React.FC<{ usage: LastHourUsageDataPoint[] }> =
                 <text key={index} x={x} y={height - 5} fill="#9ca3af" textAnchor="middle" fontSize="10">{value}</text>
             ))}
             
-            <polyline points={points} fill="none" stroke="#ff8400" strokeWidth="2" />
+            <polyline points={points} fill="none" stroke="var(--theme-accent)" strokeWidth="2" />
         </svg>
     );
 };
@@ -102,7 +102,7 @@ export const TopFundsChart: React.FC<{ data: { label: string; value: number }[];
         {data.map((item, index) => (
           <div key={item.label} className="flex items-center gap-3 w-full text-sm">
             <span className="text-gray-300 w-28 truncate text-right">{item.label}</span>
-            <div className="flex-grow bg-[#004b8d] h-5 rounded-sm overflow-hidden">
+            <div className="flex-grow bg-[var(--theme-bg-primary)] h-5 rounded-sm overflow-hidden">
               <div
                 style={{ width: `${(item.value / maxValue) * 100}%`, backgroundColor: colors[index % colors.length] }}
                 className="h-5 rounded-sm flex items-center justify-end pr-2 text-xs font-bold text-black transition-all duration-500"

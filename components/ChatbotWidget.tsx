@@ -54,6 +54,20 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ userProfile, applications
   const resizeStartRef = useRef({ x: 0, y: 0 });
   const sizeStartRef = useRef({ width: 0, height: 0 });
 
+  // Track previous fund code to detect identity switches
+  const prevFundCodeRef = useRef<string | undefined>(activeFund?.code);
+
+  useEffect(() => {
+    // If the fund code has changed, wipe the session history
+    if (activeFund?.code !== prevFundCodeRef.current) {
+      setMessages([{ role: MessageRole.MODEL, content: t('chatbotWidget.greeting') }]);
+      chatSessionRef.current = null; // Clear the session ref to force recreation
+      chatTokenSessionIdRef.current = null; // Clear the token session ID
+      prevFundCodeRef.current = activeFund?.code; // Update the ref
+      setSessionTurns(0); // Reset session turn counter
+    }
+  }, [activeFund?.code, t]);
+
   useEffect(() => {
     // This ensures CSS transitions are only applied after the initial render, preventing a "flash" on load.
     setIsMounted(true);
@@ -62,7 +76,9 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ userProfile, applications
         // FIX: Pass userProfile as the first argument to createChatSession.
         const historyToSeed = messages.length > 1 ? messages.slice(-6) : [];
         chatSessionRef.current = createChatSession(userProfile, activeFund, applications, historyToSeed);
-        chatTokenSessionIdRef.current = `ai-chat-${Math.random().toString(36).substr(2, 9)}`;
+        if (!chatTokenSessionIdRef.current) {
+             chatTokenSessionIdRef.current = `ai-chat-${Math.random().toString(36).substr(2, 9)}`;
+        }
     }
   }, [isOpen, applications, activeFund, userProfile, messages]);
 
@@ -353,7 +369,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ userProfile, applications
         </div>
       </header>
        <main className="flex-1 overflow-hidden flex flex-col">
-        <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} />
+        <ChatWindow messages={messages} isLoading={isLoading} logoUrl={logoUrl} loadingMessage={hasSessionEnded ? undefined : undefined} />
         {hasSessionEnded && (
             <div className="p-2 bg-red-900/50 text-red-200 text-xs text-center">
                 Session limit reached. Please refresh the page to start a new chat.

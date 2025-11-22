@@ -25,17 +25,17 @@ interface SortConfig {
 }
 
 const ChevronIcon: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-[#ff8400] transition-transform duration-300 transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 text-[var(--theme-accent)] transition-transform duration-300 transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
     </svg>
 );
 
 const CardLoader: React.FC = () => (
-    <div className="absolute inset-0 bg-[#003a70]/90 rounded-lg flex flex-col items-center justify-center z-10">
+    <div className="absolute inset-0 bg-[var(--theme-bg-primary)]/90 rounded-lg flex flex-col items-center justify-center z-10">
         <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-[#ff8400] rounded-full animate-pulse" style={{ animationDelay: '-0.3s' }}></div>
-            <div className="w-3 h-3 bg-[#ff8400] rounded-full animate-pulse" style={{ animationDelay: '-0.15s' }}></div>
-            <div className="w-3 h-3 bg-[#ff8400] rounded-full animate-pulse"></div>
+            <div className="w-3 h-3 bg-[var(--theme-accent)] rounded-full animate-pulse" style={{ animationDelay: '-0.3s' }}></div>
+            <div className="w-3 h-3 bg-[var(--theme-accent)] rounded-full animate-pulse" style={{ animationDelay: '-0.15s' }}></div>
+            <div className="w-3 h-3 bg-[var(--theme-accent)] rounded-full animate-pulse"></div>
         </div>
         <p className="text-white text-sm mt-2">Loading Analytics...</p>
     </div>
@@ -68,8 +68,8 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
   
-  // FIX: Define chartColors constant for use in charts.
-  const chartColors = ['#ff8400', '#edda26', '#0091b3', '#94d600'];
+  // Dynamic chart colors using CSS variables where appropriate
+  const chartColors = ['var(--theme-accent)', 'var(--theme-gradient-end)', '#0091b3', '#94d600'];
 
   const fetchData = useCallback(async () => {
     setIsFetching(true);
@@ -300,21 +300,21 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full relative">
         <div className="relative flex justify-center items-center mb-8">
-             <button onClick={() => navigate('fundPortal')} className="absolute left-0 md:left-auto md:right-full md:mr-8 text-[#ff8400] hover:opacity-80 transition-opacity" aria-label="Back to Fund Portal">
+             <button onClick={() => navigate('fundPortal')} className="absolute left-0 md:left-auto md:right-full md:mr-8 text-[var(--theme-accent)] hover:opacity-80 transition-opacity" aria-label="Back to Fund Portal">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                 </svg>
             </button>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Token Usage</h1>
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">Token Usage</h1>
               <p className="text-lg text-gray-300 mt-2">All token usage across all funds</p>
           </div>
         </div>
 
-        <div className="flex justify-between items-center mb-4 py-2 border-y border-[#005ca0]">
+        <div className="flex justify-between items-center mb-4 py-2 border-y border-[var(--theme-border)]">
             <button 
                 onClick={fetchData} 
-                className="bg-[#004b8d] hover:bg-[#005ca0] text-white font-semibold p-2 rounded-md text-sm transition-colors duration-200 flex items-center justify-center border border-[#005ca0] disabled:opacity-50 disabled:cursor-not-allowed gap-2"
+                className="bg-[var(--theme-bg-secondary)] hover:bg-[var(--theme-border)] text-white font-semibold p-2 rounded-md text-sm transition-colors duration-200 flex items-center justify-center border border-[var(--theme-border)] disabled:opacity-50 disabled:cursor-not-allowed gap-2"
                 aria-label="Refresh data"
                 disabled={isFetching}
             >
@@ -328,7 +328,7 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
                 <button 
                     onClick={handleExportCSV}
                     disabled={processedTableData.length === 0}
-                    className="bg-[#004b8d] hover:bg-[#005ca0] text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors duration-200 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed border border-[#005ca0]"
+                    className="bg-[var(--theme-bg-secondary)] hover:bg-[var(--theme-border)] text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors duration-200 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed border border-[var(--theme-border)]"
                     aria-label="Export Lifetime Token Usage to CSV"
                 >
                     Export CSV
@@ -338,21 +338,21 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
         
         <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="relative bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
+                <div className="relative bg-[var(--theme-bg-primary)]/50 p-4 rounded-lg border border-[var(--theme-border)]">
                     <h3 className="text-sm font-semibold text-white uppercase tracking-wider text-center mb-2">Cost (USD)</h3>
-                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#edda26] to-[#ff8400] text-center">
+                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)] text-center">
                         {isFetching ? '$0.0000' : `$${totalCost.toFixed(4)}`}
                     </p>
                     {isFetching && <CardLoader />}
                 </div>
-                <div className="relative bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0]">
+                <div className="relative bg-[var(--theme-bg-primary)]/50 p-4 rounded-lg border border-[var(--theme-border)]">
                     <h3 className="text-sm font-semibold text-white uppercase tracking-wider text-center mb-2">Tokens Used</h3>
-                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26] text-center">
+                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)] text-center">
                         {isFetching ? '0' : totalTokens.toLocaleString()}
                     </p>
                     {isFetching && <CardLoader />}
                 </div>
-                 <div className="relative bg-[#003a70]/50 p-4 rounded-lg border border-[#005ca0] md:col-span-2 lg:col-span-1">
+                 <div className="relative bg-[var(--theme-bg-primary)]/50 p-4 rounded-lg border border-[var(--theme-border)] md:col-span-2 lg:col-span-1">
                     <h3 className="text-sm font-semibold text-white uppercase tracking-wider text-center mb-2">Top User by Token Count</h3>
                     <div className="pt-2">
                         {isFetching ? (
@@ -366,24 +366,24 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#003a70]/50 rounded-lg border border-[#005ca0]">
+                <div className="bg-[var(--theme-bg-primary)]/50 rounded-lg border border-[var(--theme-border)]">
                     <button type="button" onClick={() => toggleSection('lastHour')} className="w-full flex justify-between items-center text-left p-4" aria-expanded={openSections.lastHour}>
-                        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Session Tokens (Last Hour)</h3>
+                        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">Session Tokens (Last Hour)</h3>
                         <ChevronIcon isOpen={openSections.lastHour} />
                     </button>
-                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.lastHour ? 'max-h-[1000px] opacity-100 p-4 pt-0 border-t border-[#005ca0]/50' : 'max-h-0 opacity-0'}`}>
+                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.lastHour ? 'max-h-[1000px] opacity-100 p-4 pt-0 border-t border-[var(--theme-border)]/50' : 'max-h-0 opacity-0'}`}>
                         <div className="pt-4">
                             <LastHourUsageChart usage={lastHourUsage} />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[#003a70]/50 rounded-lg border border-[#005ca0]">
+                <div className="bg-[var(--theme-bg-primary)]/50 rounded-lg border border-[var(--theme-border)]">
                     <button type="button" onClick={() => toggleSection('last15')} className="w-full flex justify-between items-center text-left p-4" aria-expanded={openSections.last15}>
-                        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Top 5 Funds by Tokens Used</h3>
+                        <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">Top 5 Funds by Tokens Used</h3>
                         <ChevronIcon isOpen={openSections.last15} />
                     </button>
-                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.last15 ? 'max-h-[1000px] opacity-100 p-4 pt-0 border-t border-[#005ca0]/50' : 'max-h-0 opacity-0'}`}>
+                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.last15 ? 'max-h-[1000px] opacity-100 p-4 pt-0 border-t border-[var(--theme-border)]/50' : 'max-h-0 opacity-0'}`}>
                         <div className="pt-4">
                             <TopFundsChart data={topFundsData} colors={chartColors} />
                         </div>
@@ -391,12 +391,12 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
                 </div>
             </div>
 
-            <div className="bg-[#003a70]/50 rounded-lg border border-[#005ca0]">
+            <div className="bg-[var(--theme-bg-primary)]/50 rounded-lg border border-[var(--theme-border)]">
                 <button type="button" onClick={() => toggleSection('lifetime')} className="w-full flex justify-between items-center text-left p-4" aria-expanded={openSections.lifetime}>
-                    <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8400] to-[#edda26]">Detailed Token Usage</h3>
+                    <h3 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-gradient-start)] to-[var(--theme-gradient-end)]">Detailed Token Usage</h3>
                     <ChevronIcon isOpen={openSections.lifetime} />
                 </button>
-                <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.lifetime ? 'max-h-none opacity-100 p-4 pt-0 border-t border-[#005ca0]/50' : 'max-h-0 opacity-0'}`}>
+                <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openSections.lifetime ? 'max-h-none opacity-100 p-4 pt-0 border-t border-[var(--theme-border)]/50' : 'max-h-0 opacity-0'}`}>
                      <div className="pt-4">
                         <div className="mb-4">
                              <div className="relative">
@@ -408,7 +408,7 @@ const TokenUsagePage: React.FC<TokenUsagePageProps> = ({ navigate, currentUser }
                                 <input
                                     type="search"
                                     id="token-search"
-                                    className="block w-full p-3 pl-10 text-sm text-white bg-[#004b8d]/50 border border-[#005ca0] rounded-lg focus:ring-[#ff8400] focus:border-[#ff8400]"
+                                    className="block w-full p-3 pl-10 text-sm text-white bg-[var(--theme-bg-secondary)]/50 border border-[var(--theme-border)] rounded-lg focus:ring-[var(--theme-accent)] focus:border-[var(--theme-accent)]"
                                     placeholder="Search by user, fund, feature, or model..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}

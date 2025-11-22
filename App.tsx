@@ -7,7 +7,7 @@ import type { Fund } from './data/fundData';
 import { evaluateApplicationEligibility, getAIAssistedDecision } from './services/geminiService';
 import { init as initTokenTracker, reset as resetTokenTracker } from './services/tokenTracker';
 import { authClient } from './services/firebaseAuthClient';
-import { usersRepo, identitiesRepo, applicationsRepo, fundsRepo } from './services/firestoreRepo';
+import { usersRepo, identitiesRepo, applicationsRepo, identitiesRepo as identitiesRepoExport, fundsRepo } from './services/firestoreRepo';
 import { useTranslation } from 'react-i18next';
 import { fundThemes, defaultTheme } from './data/fundThemes';
 
@@ -258,7 +258,13 @@ function App() {
             targetTheme = fundThemes[targetFundCode];
         }
     } else {
-        const themedPages: GlobalPage[] = ['home', 'profile', 'support', 'donate', 'faq', 'paymentOptions', 'aiApply', 'myApplications', 'myProxyApplications', 'apply', 'applyExpenses', 'submissionSuccess'];
+        const themedPages: GlobalPage[] = [
+            'home', 'profile', 'support', 'donate', 'faq', 'paymentOptions', 
+            'aiApply', 'myApplications', 'myProxyApplications', 'apply', 
+            'applyExpenses', 'submissionSuccess',
+            // Added Admin Portal pages to support color profiles
+            'fundPortal', 'liveDashboard', 'ticketing', 'programDetails', 'proxy', 'tokenUsage'
+        ];
         if (themedPages.includes(page) && activeFund && fundThemes[activeFund.code]) {
             targetTheme = fundThemes[activeFund.code];
         }

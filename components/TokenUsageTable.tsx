@@ -48,7 +48,7 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data, onSort, sortCon
   return (
     <div className="overflow-x-auto custom-scrollbar">
       <table className="min-w-full text-sm text-left">
-        <thead className="border-b border-[#005ca0] text-xs text-gray-200 uppercase">
+        <thead className="border-b border-[var(--theme-border)] text-xs text-gray-200 uppercase">
           <tr>
             <SortableTh sortKey="userName" onSort={onSort} sortConfig={sortConfig}>User</SortableTh>
             <SortableTh sortKey="fundName" onSort={onSort} sortConfig={sortConfig}>Fund</SortableTh>
@@ -65,7 +65,7 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data, onSort, sortCon
         <tbody>
           {data.length > 0 ? (
               data.map((row, index) => (
-                  <tr key={`${row.user}-${row.session}-${row.feature}-${row.model}-${index}`} className="border-b border-[#005ca0] hover:bg-[#004b8d]/50">
+                  <tr key={`${row.user}-${row.session}-${row.feature}-${row.model}-${index}`} className="border-b border-[var(--theme-border)] hover:bg-[var(--theme-bg-secondary)]/50">
                       <td className="px-4 py-2 font-medium text-white truncate" title={row.user}>{row.userName}</td>
                       <td className="px-4 py-2 text-white">{row.fundName}</td>
                       <td className="px-4 py-2 text-white">{row.date}</td>
@@ -75,7 +75,7 @@ const TokenUsageTable: React.FC<TokenUsageTableProps> = ({ data, onSort, sortCon
                       <td className="px-4 py-2 text-white text-right">{row.cached.toLocaleString()}</td>
                       <td className="px-4 py-2 text-white text-right">{row.output.toLocaleString()}</td>
                       <td className="px-4 py-2 text-white font-semibold text-right">{row.total.toLocaleString()}</td>
-                      <td className="px-4 py-2 text-[#edda26] font-semibold text-right">${row.cost.toFixed(4)}</td>
+                      <td className="px-4 py-2 text-[var(--theme-gradient-end)] font-semibold text-right">${row.cost.toFixed(4)}</td>
                   </tr>
               ))
           ) : (
